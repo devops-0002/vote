@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vote
+  labels:
+    role: vote
+spec:
+  replicas: 4
+  minReadySeconds: 20
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: python
+      role: vote
+    matchExpressions:
+      - key: version
+        operator: Exists
+  template:
+    metadata:
+      name: vote
+      labels:
+        app: python
+        role: vote
+        version: v2
+    spec:
+      containers:
+        - name: app
+          image: schoolofdevops/vote:v2
+          envFrom:
+            - configMapRef:
+                name: vote
+                optional: true
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
